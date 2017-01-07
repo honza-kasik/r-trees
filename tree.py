@@ -74,8 +74,7 @@ class VisualRepresentation:
 
 class VisuallyRepresentedItem:
     def visual_representation(self) -> VisualRepresentation:
-        print("bla")
-        pass
+        print("This method was not overloaded!")
 
 
 class Record(VisuallyRepresentedItem):
@@ -85,7 +84,6 @@ class Record(VisuallyRepresentedItem):
         self._visual_representation = VisualRepresentation(value)
 
     def visual_representation(self) -> VisualRepresentation:
-        print("ble")
         return self._visual_representation
 
 
@@ -93,7 +91,7 @@ class Node(VisuallyRepresentedItem):
     def __init__(self):
         self.records = []
         self.children = []
-        self.visual_representation = None
+        self.vr = None
 
     def count_of_records(self):
         return len(self.records)
@@ -115,6 +113,11 @@ class Node(VisuallyRepresentedItem):
     def is_leaf(self):
         return len(self.children) == 0
 
+    def visual_representation(self) -> VisualRepresentation:
+        if self.vr is None:
+            self.update_visual_representation()
+        return self.vr
+
     def update_visual_representation(self):
         left_max = math.inf
         top_max = -math.inf
@@ -128,23 +131,17 @@ class Node(VisuallyRepresentedItem):
         for item in examined_set:
             print(str(item))
             r = item.visual_representation()
-            if r.left < left_max:
-                left_max = r.left
-            if r.right > right_max:
-                right_max = r.right
-            if r.top > top_max:
-                top_max = r.top
-            if r.bottom < bottom_max:
-                bottom_max = r.bottom
+            if r.left() < left_max:
+                left_max = r.left()
+            if r.right() > right_max:
+                right_max = r.right()
+            if r.top() > top_max:
+                top_max = r.top()
+            if r.bottom() < bottom_max:
+                bottom_max = r.bottom()
         # return enclosing rectangle
-        self.visual_representation = VisualRepresentation(Rectangle(Point(left_max, bottom_max),
-                                                                    Point(right_max, top_max)))
-
-    def visual_representation(self) -> VisualRepresentation:
-        if self.visual_representation is None:
-            print("boo")
-            self.update_visual_representation()
-        return self.visual_representation
+        self.vr = VisualRepresentation(Rectangle(Point(left_max, bottom_max),
+                                                 Point(right_max, top_max)))
 
 
 class Tree:
@@ -191,8 +188,9 @@ class Tree:
 
     def draw(self, win):
         n = self.root
-        print(len(n.children))
-        n.visual_representation().top()
         n.visual_representation().draw(win)
         for child in n.children:
             child.visual_representation().draw(win)
+            if child.is_leaf():
+                for record in child.records:
+                    record.visual_representation().draw(win)
