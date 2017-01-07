@@ -97,6 +97,7 @@ class Node(VisuallyRepresentedItem):
         return len(self.records)
 
     def add_record(self, record: Record):
+        print("Adding record " + str(record.visual_representation().r))
         self.records.append(record)
         self.update_visual_representation()
 
@@ -129,7 +130,7 @@ class Node(VisuallyRepresentedItem):
             examined_set = self.records
 
         for item in examined_set:
-            print(str(item))
+            print("Examining " + str(item) + " with " + str(item.visual_representation().r))
             r = item.visual_representation()
             if r.left() < left_max:
                 left_max = r.left()
@@ -140,8 +141,20 @@ class Node(VisuallyRepresentedItem):
             if r.bottom() < bottom_max:
                 bottom_max = r.bottom()
         # return enclosing rectangle
+        print("Updated visual representation for " + str(self) + " with " + str(examined_set))
         self.vr = VisualRepresentation(Rectangle(Point(left_max, bottom_max),
                                                  Point(right_max, top_max)))
+        print("Result: " + str(self.vr.r))
+
+    def draw(self, win):
+        self.visual_representation().draw(win)
+        print("Drawing " + str(self) + " with " + str(self.visual_representation().r))
+        if self.is_leaf():
+            for item in self.records:
+                item.visual_representation().draw(win)
+        else:
+            for item in self.children:
+                item.draw(win)
 
 
 class Tree:
@@ -188,9 +201,10 @@ class Tree:
 
     def draw(self, win):
         n = self.root
-        n.visual_representation().draw(win)
-        for child in n.children:
-            child.visual_representation().draw(win)
-            if child.is_leaf():
-                for record in child.records:
-                    record.visual_representation().draw(win)
+        n.draw(win)
+        #n.visual_representation().draw(win)
+        #for child in n.children:
+        #    child.visual_representation().draw(win)
+        #    if child.is_leaf():
+        #        for record in child.records:
+        #            record.visual_representation().draw(win)
