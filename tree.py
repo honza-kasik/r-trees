@@ -2,159 +2,70 @@ from graphics import *
 import math
 
 
-class VisualRepresentation:
-
-    def __init__(self, r):
-        if not (isinstance(r, Rectangle) or isinstance(r, Point)):
-            print("Invalid visual representation type!")
-        else:
-            self.r = r
+class Rectangle(Rectangle):
+    def __init__(self, p1, p2):
+        super().__init__(p1, p2)
 
     def bottom(self):
-        r = self.r
-        if isinstance(r, Rectangle):
-            if r.getP1().getY() > r.getP2().getY():
-                return r.getP2().getY()
-            else:
-                return r.getP1().getY()
-        else:
-            return r.getY()
+        return min(self.getP1().getY(), self.getP2().getY())
 
     def top(self):
-        r = self.r
-        if isinstance(r, Rectangle):
-            if r.getP1().getY() > r.getP2().getY():
-                return r.getP1().getY()
-            else:
-                return r.getP2().getY()
-        else:
-            return r.getY()
+        return max(self.getP1().getY(), self.getP2().getY())
 
     def right(self):
-        r = self.r
-        if isinstance(r, Rectangle):
-            if r.getP1().getX() > r.getP2().getX():
-                return r.getP1().getX()
-            else:
-                return r.getP2().getX()
-        else:
-            return r.getX()
+        return max(self.getP1().getX(), self.getP2().getX())
 
     def left(self):
-        r = self.r
-        if isinstance(r, Rectangle):
-            if r.getP1().getX() > r.getP2().getX():
-                return r.getP2().getX()
-            else:
-                return r.getP1().getX()
-        else:
-            return r.getX()
+        return min(self.getP1().getX(), self.getP2().getX())
 
     def area(self):
         return (self.right() - self.left()) * (self.top() - self.bottom())
 
     def emerge_point(self, point: Point):
-        max_left = self.left()
-        max_right = self.right()
-        max_top = self.top()
-        max_bottom = self.bottom()
-        if point.getY() > max_top:
-            max_top = point.getY()
-        if point.getY() < max_bottom:
-            max_bottom = point.getY()
-        if point.getX() > max_right:
-            max_right = point.getX()
-        if point.getX() < max_left:
-            max_left = point.getX()
-        return VisualRepresentation(Rectangle(Point(max_left, max_bottom), Point(max_right, max_top)))
+        max_left = min(self.left(), point.getX())
+        max_right = max(self.right(), point.getX())
+        max_top = max(self.top(), point.getY())
+        max_bottom = min(self.top(), point.getY())
+        return self.__init__(Point(max_left, max_top), Point(max_right, max_bottom))
 
-    def draw(self, win):
-        self.r.draw(win)
+    def __str__(self):
+        return self.__repr__()
+
+    def __repr__(self):
+        return "<Rectangle; p1: {0}, p2: {1}>".format(self.p1, self.p2)
 
 
-class VisuallyRepresentedItem:
-    def visual_representation(self) -> VisualRepresentation:
-        print("This method was not overloaded!")
-
-
-class Record(VisuallyRepresentedItem):
-
-    def __init__(self, value: Point):
-        self.value = value
-        self._visual_representation = VisualRepresentation(value)
-
-    def visual_representation(self) -> VisualRepresentation:
-        return self._visual_representation
-
-
-class Node(VisuallyRepresentedItem):
+class Node:
     def __init__(self):
-        self.records = []
+        self.parent = None
+        self.rectangle = None
         self.children = []
-        self.vr = None
-
-    def count_of_records(self):
-        return len(self.records)
-
-    def add_record(self, record: Record):
-        print("Adding record " + str(record.visual_representation().r))
-        self.records.append(record)
-        self.update_visual_representation()
+        self.records = []
 
     def get_children(self):
         return self.children
 
     def add_child(self, child):
         self.children.append(child)
-        self.update_visual_representation()
-
-    def remove_record(self, record: Record):
-        self.records.remove(record)
 
     def is_leaf(self):
         return len(self.children) == 0
 
-    def visual_representation(self) -> VisualRepresentation:
-        if self.vr is None:
-            self.update_visual_representation()
-        return self.vr
+    def draw(self, win: GraphWin, level: int):
+        self.rectangle.draw(win)
+        # todo draw children and values and change color based on level
 
-    def update_visual_representation(self):
-        left_max = math.inf
-        top_max = -math.inf
-        right_max = -math.inf
-        bottom_max = math.inf
+    def add_record(self, record: Point):
+        self.records.append(record)
 
-        examined_set = self.children
-        if self.is_leaf():
-            examined_set = self.records
+    def get_records(self):
+        return self.records
 
-        for item in examined_set:
-            print("Examining " + str(item) + " with " + str(item.visual_representation().r))
-            r = item.visual_representation()
-            if r.left() < left_max:
-                left_max = r.left()
-            if r.right() > right_max:
-                right_max = r.right()
-            if r.top() > top_max:
-                top_max = r.top()
-            if r.bottom() < bottom_max:
-                bottom_max = r.bottom()
-        # return enclosing rectangle
-        print("Updated visual representation for " + str(self) + " with " + str(examined_set))
-        self.vr = VisualRepresentation(Rectangle(Point(left_max, bottom_max),
-                                                 Point(right_max, top_max)))
-        print("Result: " + str(self.vr.r))
+    def __str__(self):
+        return self.__repr__()
 
-    def draw(self, win):
-        self.visual_representation().draw(win)
-        print("Drawing " + str(self) + " with " + str(self.visual_representation().r))
-        if self.is_leaf():
-            for item in self.records:
-                item.visual_representation().draw(win)
-        else:
-            for item in self.children:
-                item.draw(win)
+    def __repr__(self):
+        return "<Node; Records: {0}, Children: {1}>".format(self.records, self.children)
 
 
 class Tree:
@@ -167,14 +78,15 @@ class Tree:
     def __pick_subtree(self, n: Node, point: Point) -> Node:
         smallest_expansion = math.inf
         picked_node = None
-        for child in n.children:
-            child_vr = child.visual_representation()
-            tmp_vr = child_vr.emerge_point(point)
-            expansion = child_vr.area() - tmp_vr.area()
+
+        for child in n.get_children():
+            tmp_rect = child.rectangle.emerge_point(point)
+            expansion = child.rectangle.area() - tmp_rect.area()
             if expansion < smallest_expansion or (  # expansion is same as smallest expansion, compare rectangle areas
-                    expansion == smallest_expansion and child_vr.area() < picked_node.visual_representation().area()):
+                            expansion == smallest_expansion and child.rectangle.area() < picked_node.rectangle.area()):
                 smallest_expansion = expansion
                 picked_node = child
+
         return picked_node
 
     # Choose leaf to which new index record will be placed
@@ -184,27 +96,23 @@ class Tree:
             n = self.__pick_subtree(n, point)
         return n
 
-    def _adjust_tree(self):
+    def _adjust_tree(self, node: Node):
         pass
+        # todo
 
-    def _split_node(self):
+    def _split_node(self, node: Node):
+        return Node(), Node()
         pass
+        # todo
 
     def insert(self, x, y):
         point = Point(x, y)
-        picked_node = self._choose_leaf(point)
-        if picked_node.count_of_records() < self.max_cap:
-            picked_node.add_record(Record(point))
-        else:
-            pass
-            # split node etc...
+        chosen_leaf = self._choose_leaf(point)
+        chosen_leaf.add_record(point)
+        if len(chosen_leaf.get_records()) >= self.max_cap:
+            l, ll = self._split_node(chosen_leaf)
+            self._adjust_tree(l)
+            self._adjust_tree(ll)
 
-    def draw(self, win):
-        n = self.root
-        n.draw(win)
-        #n.visual_representation().draw(win)
-        #for child in n.children:
-        #    child.visual_representation().draw(win)
-        #    if child.is_leaf():
-        #        for record in child.records:
-        #            record.visual_representation().draw(win)
+    def draw(self, win: GraphWin):
+        self.root.draw(win, 0)
