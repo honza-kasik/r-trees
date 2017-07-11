@@ -2,7 +2,7 @@ from graphics import *
 import math
 
 
-class Rectangle(Rectangle):
+class RRectangle(Rectangle):
     def __init__(self, p1, p2):
         super().__init__(p1, p2)
 
@@ -25,7 +25,7 @@ class Rectangle(Rectangle):
         max_left = min(self.left(), point.getX())
         max_right = max(self.right(), point.getX())
         max_top = max(self.top(), point.getY())
-        max_bottom = min(self.top(), point.getY())
+        max_bottom = min(self.bottom(), point.getY())
         return self.__init__(Point(max_left, max_top), Point(max_right, max_bottom))
 
     def __str__(self):
@@ -57,6 +57,9 @@ class Node:
 
     def add_record(self, record: Point):
         self.records.append(record)
+
+    def remove_record(self, record: Point):
+        self.records.remove(record)
 
     def get_records(self):
         return self.records
